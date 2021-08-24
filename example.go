@@ -1,0 +1,5 @@
+package devcommon
+
+func main() {
+
+}
