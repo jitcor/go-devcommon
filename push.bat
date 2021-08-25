@@ -1,3 +1,3 @@
-git add -A
+git add .
 git commit -m "OK"
 git push
