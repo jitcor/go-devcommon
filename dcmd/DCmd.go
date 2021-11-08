@@ -91,3 +91,47 @@ func Exec(cmd string, params string,err *error) string {
 	//OnInfo(result)
 	return result
 }
+func Exec__(cmd string, params string,execDir string,err *error) string {
+	var result = ""
+	localParams := strings.Split(params, " ")
+	cmdPtr := exec.Command(cmd, localParams...)
+	cmdPtr.Dir=execDir
+	log.Println("Exec:",cmdPtr)
+	stdout, e := cmdPtr.StdoutPipe()
+	if e != nil {
+		*err=e
+		return ""
+	}
+	defer stdout.Close()
+	stderr, e := cmdPtr.StderrPipe()
+	if e != nil {
+		*err=e
+		return ""
+	}
+	defer stderr.Close()
+
+	if err := cmdPtr.Start(); err != nil {
+		return err.Error()
+	}
+	dctask.NewDcTask().Go(func(err *error) {
+		if opBytes, e := ioutil.ReadAll(stderr); e != nil {
+			*err=e
+			return
+		} else {
+			result += "\n" + string(opBytes)
+		}
+	},err).Go(func(err *error) {
+		if opBytes, e := ioutil.ReadAll(stdout); e != nil {
+			*err=e
+			return
+		} else {
+			result = string(opBytes)
+		}
+	},err).Wait()
+	if *err!=nil{
+		return ""
+	}
+	cmdPtr.Wait()
+	//OnInfo(result)
+	return result
+}
