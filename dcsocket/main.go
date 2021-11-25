@@ -49,6 +49,10 @@ func GetUDPConn(port int) (udpConn *net.UDPConn, err error) {
 		return udpConn,nil
 	}
 }
+func GetTCPConn(host string,port int) (conn net.Conn, err error) {
+	return net.Dial("tcp",host+":"+strconv.Itoa(port))
+}
+
 func CheckPort(host string, port int)bool {
 	timeout := time.Second
 	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(port)), timeout)

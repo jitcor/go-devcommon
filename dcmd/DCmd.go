@@ -91,7 +91,7 @@ func Exec(cmd string, params string,err *error) string {
 	//OnInfo(result)
 	return result
 }
-func Exec__(cmd string, params string,execDir string,err *error) string {
+func ExecOnDir(cmd string, params string,execDir string,err *error) string {
 	var result = ""
 	localParams := strings.Split(params, " ")
 	cmdPtr := exec.Command(cmd, localParams...)

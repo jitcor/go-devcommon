@@ -25,6 +25,7 @@ func (that *DcTask) Go(task func(*error),err *error) *DcTask {
 	that.tasks= append(that.tasks, task)
 	return that
 }
+
 func (that DcTask) Wait() {
 	that.wg.Wait()
 }

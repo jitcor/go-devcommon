@@ -2,9 +2,9 @@ package dcsocket
 
 import (
 	"errors"
+	"github.com/Humenger/go-devcommon"
 	"io"
 	"net"
-	"smsonline/devcommon"
 )
 
 type DCSTcp struct {
