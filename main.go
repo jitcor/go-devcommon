@@ -36,39 +36,52 @@ func GetUUID() ([]byte, error) {
 		return bUUID, nil
 	}
 }
-func CreateFileAndDelIfExists(path string) *os.File {
+func CreateFileAndDelIfExists(path string,retErr *error) *os.File {
+	if *retErr!=nil{
+		return nil
+	}
 	if Exists(path) || IsDir(path) {
 		if err := os.RemoveAll(path); err != nil {
-			panic(err)
+			*retErr=err
+			return nil
 		}
 	}
 	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
-		panic(err)
+		*retErr=err
+		return nil
 	}
 	if file, err := os.OpenFile(path, os.O_CREATE, 0777); err != nil {
-		panic(err)
+		*retErr=err
+		return nil
 	} else {
 		return file
 	}
 }
-func CreateFileIfNotExists(path string) *os.File {
+func CreateFileIfNotExists(path string,retErr *error) *os.File {
+	if *retErr!=nil{
+		return nil
+	}
 	if Exists(path) && IsFile(path) {
 		if file, err := os.OpenFile(path, os.O_APPEND, 0777); err != nil {
-			panic(err)
+			*retErr=err
+			return nil
 		} else {
 			return file
 		}
 	}
 	if Exists(path) || IsDir(path) {
 		if err := os.RemoveAll(path); err != nil {
-			panic(err)
+			*retErr=err
+			return nil
 		}
 	}
 	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
-		panic(err)
+		*retErr=err
+		return nil
 	}
 	if file, err := os.OpenFile(path, os.O_CREATE, 0777); err != nil {
-		panic(err)
+		*retErr=err
+		return nil
 	} else {
 		return file
 	}
