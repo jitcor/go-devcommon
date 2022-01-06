@@ -1,7 +1,7 @@
 package dcsocket
 
 import (
-	"mihuanji/devcommon/dcdebug"
+	"github.com/Humenger/go-devcommon/dcdebug"
 	"testing"
 )
 
