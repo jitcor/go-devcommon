@@ -95,12 +95,38 @@ func (that *DcAdb) CheckApkExist(packageName string) bool {
 	that.ClearCRLF()
 	return that.mResult!=""&&strings.Contains(that.mResult,packageName)
 }
+
 func (that *DcAdb) CheckApkIsRunning(packageName string) bool {
 	that.mCurrentCmd = that.mAdbPath + " shell ps | findstr "+packageName
 	that.mResult = ExecWrap2(that.mCurrentCmd)
 	that.ClearCRLF()
 	return that.mResult!=""&&strings.Contains(that.mResult,packageName)
 }
+func (that *DcAdb) LaunchApp(packageName string) bool {
+	if that.CheckApkIsRunning(packageName){
+		return true
+	}
+	that.mCurrentCmd = that.mAdbPath + " shell dumpsys package "+packageName
+	that.mResult = ExecWrap2(that.mCurrentCmd)
+	that.ClearCRLF()
+	if that.mResult!=""&&strings.Contains(that.mResult,"Activity Resolver Table:"){
+		if re, err := regexp.Compile(`android\.intent\.action\.MAIN:.*? ([a-zA-Z0-9\\._]*?)/([a-zA-Z0-9\\._]*?) filter .*?Action: "android\.intent\.action\.MAIN"`);err!=nil{
+			return false
+		}else if match:=re.FindStringSubmatch(that.mResult);match==nil{
+			return false
+		}else{
+			pkgName:=match[1]
+			activity:=match[2]
+			that.mCurrentCmd = that.mAdbPath + " shell am start -n "+pkgName+"/"+activity
+			that.mResult = ExecWrap2(that.mCurrentCmd)
+			that.ClearCRLF()
+			return that.mResult!=""&&strings.Contains(that.mResult,"cmp="+pkgName+"/"+activity)
+		}
+
+	}
+	return false
+}
+
 func (that *DcAdb) CheckDevicesExist() bool {
 	that.mCurrentCmd = that.mAdbPath + " devices"
 	that.mResult = ExecWrap2(that.mCurrentCmd)
