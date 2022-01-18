@@ -18,7 +18,7 @@ func NewDcShell(root bool) *DcShell {
 	return &DcShell{root: root}
 }
 func (that*DcShell)CheckAppIsRunning(packageName string) bool {
-	that.currentCmd = "ps | grep "+packageName
+	that.currentCmd = "ps -A | grep "+packageName
 	that.result = that.execWrap2(that.currentCmd)
 	that.ClearCRLF()
 	return that.result!=""&&strings.Contains(that.result,packageName)
