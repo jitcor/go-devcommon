@@ -165,6 +165,7 @@ func (that *DcAdb) Printf(tag string) *DcAdb {
 	fmt.Println("DcAdb", tag+" "+that.mResult)
 	return that
 }
+
 func ExecWrap2(cmdAndParams string) string {
 	if cmdAndParams == "" {
 		return "Please input cmd And Params to call execWrap2"
