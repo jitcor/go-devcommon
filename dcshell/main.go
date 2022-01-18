@@ -10,12 +10,13 @@ import (
 
 type DcShell struct {
 	root bool
+	debug bool
 	result string
 	currentCmd string
 }
 
-func NewDcShell(root bool) *DcShell {
-	return &DcShell{root: root}
+func NewDcShell(root,debug bool) *DcShell {
+	return &DcShell{root: root,debug: debug}
 }
 func (that*DcShell)CheckAppIsRunning(packageName string) bool {
 	that.currentCmd = "ps -A"
@@ -58,7 +59,9 @@ func (that *DcShell) execWrap2(cmdAndParams string) string {
 	if cmdAndParams == "" {
 		return "Please input cmd And Params to call execWrap2"
 	}
-	log.Println(cmdAndParams)
+	if that.debug{
+		log.Println(cmdAndParams)
+	}
 	localParams := strings.Split(cmdAndParams, " ")
 	cmd := ""
 	cmd = localParams[0]
@@ -70,14 +73,18 @@ func (that *DcShell) execWrap2(cmdAndParams string) string {
 		params += " " + localParams[i]
 	}
 	ret:= that.execWrap(cmd, params[1:])
-	log.Println("exec ret:",ret)
+	if that.debug{
+		log.Println("exec ret:",ret)
+	}
 	return ret
 }
 func (that *DcShell) execWrap(cmd string, params string) string {
 	var result = ""
 	localParams := strings.Split(params, " ")
 	cmdPtr := exec.Command(cmd, localParams...)
-	log.Println(cmdPtr.String())
+	if that.debug{
+		log.Println(cmdPtr.String())
+	}
 	stdout, err := cmdPtr.StdoutPipe()
 	if err != nil {
 		return err.Error()
@@ -104,7 +111,9 @@ func (that *DcShell) execWrap(cmd string, params string) string {
 		result += "\n" + string(opBytes)
 	}
 	cmdPtr.Wait()
-	log.Println(result)
+	if that.debug{
+		log.Println(result)
+	}
 	//OnInfo(result)
 	return result
 }
