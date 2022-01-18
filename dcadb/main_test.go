@@ -6,5 +6,5 @@ import (
 )
 
 func TestDcAdb_LaunchApp(t *testing.T) {
-	log.Println("",NewDcAdb("adb").LaunchApp("bin.mt.pls"))
+	log.Println("",NewDcAdb("adb").LaunchApp("com.tencent.mm"))
 }

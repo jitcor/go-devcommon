@@ -21,8 +21,7 @@ func NewDcShell(root,debug bool) *DcShell {
 func (that*DcShell)CheckAppIsRunning(packageName string) bool {
 	that.currentCmd = "ps -A"
 	that.result = that.execWrap2(that.currentCmd)
-	that.ClearCRLF()
-	re,_:=regexp.Compile(packageName+`(?!\:)`)
+	re,_:=regexp.Compile(strings.ReplaceAll(packageName,`.`,`\.`)+`(?:\n|$|\r)`)
 	return that.result!=""&&strings.Contains(that.result,packageName)&&re.MatchString(that.result)
 }
 

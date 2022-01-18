@@ -97,10 +97,10 @@ func (that *DcAdb) CheckApkExist(packageName string) bool {
 }
 
 func (that *DcAdb) CheckApkIsRunning(packageName string) bool {
-	that.mCurrentCmd = that.mAdbPath + " shell ps | findstr "+packageName
+	that.mCurrentCmd = that.mAdbPath + " shell ps -A | grep "+packageName
 	that.mResult = ExecWrap2(that.mCurrentCmd)
-	that.ClearCRLF()
-	return that.mResult!=""&&strings.Contains(that.mResult,packageName)
+	re,_:=regexp.Compile(strings.ReplaceAll(packageName,`.`,`\.`)+`(?:\n|$|\r)`)
+	return that.mResult!=""&&strings.Contains(that.mResult,packageName)&&re.MatchString(that.mResult)
 }
 func (that *DcAdb) LaunchApp(packageName string) bool {
 	if that.CheckApkIsRunning(packageName){
