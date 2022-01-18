@@ -22,7 +22,8 @@ func (that*DcShell)CheckAppIsRunning(packageName string) bool {
 	that.currentCmd = "ps -A"
 	that.result = that.execWrap2(that.currentCmd)
 	that.ClearCRLF()
-	return that.result!=""&&strings.Contains(that.result,packageName)
+	re,_:=regexp.Compile(packageName+`(?!\:)`)
+	return that.result!=""&&strings.Contains(that.result,packageName)&&re.MatchString(that.result)
 }
 
 func (that *DcShell) LaunchApp(packageName string) bool {
