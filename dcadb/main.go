@@ -99,8 +99,12 @@ func (that *DcAdb) CheckApkExist(packageName string) bool {
 func (that *DcAdb) CheckApkIsRunning(packageName string) bool {
 	that.mCurrentCmd = that.mAdbPath + " shell ps -A | grep "+packageName
 	that.mResult = ExecWrap2(that.mCurrentCmd)
-	re,_:=regexp.Compile(strings.ReplaceAll(packageName,`.`,`\.`)+`(?:\n|$|\r)`)
-	return that.mResult!=""&&strings.Contains(that.mResult,packageName)&&re.MatchString(that.mResult)
+	if re,err:=regexp.Compile(strings.ReplaceAll(packageName,`.`,`\.`)+`(?:\n|$|\r)`);err!=nil{
+		log.Println("[-] reg compile error:",err)
+		return false
+	}else {
+		return that.mResult!=""&&strings.Contains(that.mResult,packageName)&&re.MatchString(that.mResult)
+	}
 }
 func (that *DcAdb) LaunchApp(packageName string) bool {
 	if that.CheckApkIsRunning(packageName){
@@ -110,13 +114,16 @@ func (that *DcAdb) LaunchApp(packageName string) bool {
 	that.mResult = ExecWrap2(that.mCurrentCmd)
 	that.ClearCRLF()
 	if that.mResult!=""&&strings.Contains(that.mResult,"Activity Resolver Table:"){
-		if re, err := regexp.Compile(`android\.intent\.action\.MAIN:.*? ([a-zA-Z0-9\\._]*?)/([a-zA-Z0-9\\._]*?) filter .*?Action: "android\.intent\.action\.MAIN"`);err!=nil{
+		if re, err := regexp.Compile(`[a-z0-9]{3,10} ([a-zA-Z0-9\\._]*?)/([a-zA-Z0-9\\._]*?) filter [a-z0-9]{3,10}[^/]*?Category: "android\.intent\.category\.LAUNCHER"`);err!=nil{
+			log.Println("[-] reg compile error:",err)
 			return false
 		}else if match:=re.FindStringSubmatch(that.mResult);match==nil{
+			log.Println("[-] not found activity on package:",packageName)
 			return false
 		}else{
 			pkgName:=match[1]
 			activity:=match[2]
+			log.Println("[+] find package:",pkgName,",activity:",activity)
 			that.mCurrentCmd = that.mAdbPath + " shell am start -n "+pkgName+"/"+activity
 			that.mResult = ExecWrap2(that.mCurrentCmd)
 			that.ClearCRLF()

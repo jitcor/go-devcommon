@@ -21,8 +21,12 @@ func NewDcShell(root,debug bool) *DcShell {
 func (that*DcShell)CheckAppIsRunning(packageName string) bool {
 	that.currentCmd = "ps -A"
 	that.result = that.execWrap2(that.currentCmd)
-	re,_:=regexp.Compile(strings.ReplaceAll(packageName,`.`,`\.`)+`(?:\n|$|\r)`)
-	return that.result!=""&&strings.Contains(that.result,packageName)&&re.MatchString(that.result)
+	if re,err:=regexp.Compile(strings.ReplaceAll(packageName,`.`,`\.`)+`(?:\n|$|\r)`);err!=nil{
+		log.Println("[-] reg compile error:",err)
+		return false
+	}else {
+		return that.result!=""&&strings.Contains(that.result,packageName)&&re.MatchString(that.result)
+	}
 }
 
 func (that *DcShell) LaunchApp(packageName string) bool {
@@ -32,14 +36,18 @@ func (that *DcShell) LaunchApp(packageName string) bool {
 	that.currentCmd = "dumpsys package "+packageName
 	that.result = that.execWrap2(that.currentCmd)
 	that.ClearCRLF()
+	//Category: "android.intent.category.LAUNCHER"
 	if that.result!=""&&strings.Contains(that.result,"Activity Resolver Table:"){
-		if re, err := regexp.Compile(`android\.intent\.action\.MAIN:.*? ([a-zA-Z0-9\\._]*?)/([a-zA-Z0-9\\._]*?) filter .*?Action: "android\.intent\.action\.MAIN"`);err!=nil{
+		if re, err := regexp.Compile(`[a-z0-9]{3,10} ([a-zA-Z0-9\\._]*?)/([a-zA-Z0-9\\._]*?) filter [a-z0-9]{3,10}[^/]*?Category: "android\.intent\.category\.LAUNCHER"`);err!=nil{
+			log.Println("[-] reg compile error:",err)
 			return false
 		}else if match:=re.FindStringSubmatch(that.result);match==nil{
+			log.Println("[-] not found activity on package:",packageName)
 			return false
 		}else{
 			pkgName:=match[1]
 			activity:=match[2]
+			log.Println("[+] find package:",pkgName,",activity:",activity)
 			that.currentCmd = "am start -n "+pkgName+"/"+activity
 			that.result = that.execWrap2(that.currentCmd)
 			that.ClearCRLF()
