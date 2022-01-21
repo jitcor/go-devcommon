@@ -29,9 +29,9 @@ func (that*DcShell)CheckAppIsRunning(packageName string) bool {
 	}
 }
 func (that*DcShell)CheckPortIsListen(port string) bool {
-	that.currentCmd = "netstat -a"
+	that.currentCmd = "netstat -anp"
 	that.result = that.execWrap2(that.currentCmd)
-	if re,err:=regexp.Compile(`:::`+port+`[^\r\n]*?LISTEN[\r\n$]`);err!=nil{
+	if re,err:=regexp.Compile(`:::`+port+`[^\r\n]*?LISTEN`);err!=nil{
 		log.Println("[-] reg compile error:",err)
 		return false
 	}else {

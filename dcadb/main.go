@@ -95,6 +95,16 @@ func (that *DcAdb) CheckApkExist(packageName string) bool {
 	that.ClearCRLF()
 	return that.mResult!=""&&strings.Contains(that.mResult,packageName)
 }
+func (that*DcAdb)CheckPortIsListen(port string) bool {
+	that.mCurrentCmd = that.mAdbPath + " shell netstat -anp"
+	that.mResult = ExecWrap2(that.mCurrentCmd)
+	if re,err:=regexp.Compile(`:::`+port+`[^\r\n]*?LISTEN`);err!=nil{
+		log.Println("[-] reg compile error:",err)
+		return false
+	}else {
+		return that.mResult!=""&&strings.Contains(that.mResult,":::"+port)&&re.MatchString(that.mResult)
+	}
+}
 
 func (that *DcAdb) CheckApkIsRunning(packageName string) bool {
 	that.mCurrentCmd = that.mAdbPath + " shell ps -A | grep "+packageName
