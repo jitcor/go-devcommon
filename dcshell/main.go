@@ -28,8 +28,43 @@ func (that*DcShell)CheckAppIsRunning(packageName string) bool {
 		return that.result!=""&&strings.Contains(that.result,packageName)&&re.MatchString(that.result)
 	}
 }
+func (that*DcShell)CheckPortIsListen(port string) bool {
+	that.currentCmd = "netstat -a"
+	that.result = that.execWrap2(that.currentCmd)
+	if re,err:=regexp.Compile(`:::`+port+`[^\r\n]*?LISTEN[\r\n$]`);err!=nil{
+		log.Println("[-] reg compile error:",err)
+		return false
+	}else {
+		return that.result!=""&&strings.Contains(that.result,":::"+port)&&re.MatchString(that.result)
+	}
+}
 
 func (that *DcShell) LaunchApp(packageName string) bool {
+	that.currentCmd = "dumpsys package "+packageName
+	that.result = that.execWrap2(that.currentCmd)
+	that.ClearCRLF()
+	//Category: "android.intent.category.LAUNCHER"
+	if that.result!=""&&strings.Contains(that.result,"Activity Resolver Table:"){
+		if re, err := regexp.Compile(`[a-z0-9]{3,10} ([a-zA-Z0-9\\._]*?)/([a-zA-Z0-9\\._]*?) filter [a-z0-9]{3,10}[^/]*?Category: "android\.intent\.category\.LAUNCHER"`);err!=nil{
+			log.Println("[-] reg compile error:",err)
+			return false
+		}else if match:=re.FindStringSubmatch(that.result);match==nil{
+			log.Println("[-] not found activity on package:",packageName)
+			return false
+		}else{
+			pkgName:=match[1]
+			activity:=match[2]
+			log.Println("[+] find package:",pkgName,",activity:",activity)
+			that.currentCmd = "am start -n "+pkgName+"/"+activity
+			that.result = that.execWrap2(that.currentCmd)
+			that.ClearCRLF()
+			return that.result!=""&&strings.Contains(that.result,"cmp="+pkgName+"/"+activity)
+		}
+
+	}
+	return false
+}
+func (that *DcShell) LaunchAppWhenStopped(packageName string) bool {
 	if that.CheckAppIsRunning(packageName){
 		return true
 	}
@@ -57,6 +92,7 @@ func (that *DcShell) LaunchApp(packageName string) bool {
 	}
 	return false
 }
+
 func (that *DcShell) ClearCRLF() *DcShell {
 	reg := regexp.MustCompile(`[\r\n]`)
 	that.result=reg.ReplaceAllString(that.result, "")
