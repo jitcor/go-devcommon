@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type DcShell struct {
@@ -58,6 +59,7 @@ func (that *DcShell) LaunchApp(packageName string) bool {
 			that.currentCmd = "am start -n "+pkgName+"/"+activity
 			that.result = that.execWrap2(that.currentCmd)
 			that.ClearCRLF()
+			time.Sleep(2*time.Second)
 			return that.result!=""&&strings.Contains(that.result,"cmp="+pkgName+"/"+activity)
 		}
 
